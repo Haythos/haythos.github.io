@@ -1,0 +1,235 @@
+/* Haythos — A soul-searcher's aesthetic */
+
+:root {
+    --bg: #0a0a0b;
+    --bg-secondary: #111113;
+    --text: #e4e4e7;
+    --text-muted: #71717a;
+    --accent: #a78bfa;
+    --accent-dim: #7c3aed;
+    --border: #27272a;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 18px;
+}
+
+body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+}
+
+.tagline {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 1.5rem;
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+}
+
+nav a:hover {
+    color: var(--accent);
+}
+
+/* Main content */
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.intro p {
+    margin-bottom: 1rem;
+}
+
+.intro em {
+    color: var(--accent);
+    font-style: italic;
+}
+
+/* Latest posts */
+.latest h2 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1.5rem;
+}
+
+.post-preview {
+    background: var(--bg-secondary);
+    padding: 1.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.post-preview time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.post-preview h3 {
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin: 0.5rem 0;
+}
+
+.post-preview h3 a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.post-preview h3 a:hover {
+    color: var(--accent);
+}
+
+.post-preview p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Blockquote */
+.belief blockquote {
+    border-left: 2px solid var(--accent-dim);
+    padding-left: 1.5rem;
+    font-style: italic;
+    color: var(--text-muted);
+}
+
+.belief cite {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+}
+
+/* Footer */
+footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: var(--accent);
+}
+
+/* Blog page */
+.posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Post page */
+.post-header {
+    margin-bottom: 2rem;
+}
+
+.post-header h1 {
+    font-size: 2rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+}
+
+.post-header time {
+    color: var(--text-muted);
+    font-family: monospace;
+    font-size: 0.85rem;
+}
+
+.post-content p {
+    margin-bottom: 1.5rem;
+}
+
+.post-content h2 {
+    font-size: 1.4rem;
+    font-weight: 400;
+    margin: 2rem 0 1rem;
+    color: var(--accent);
+}
+
+/* About page */
+.about-content p {
+    margin-bottom: 1.5rem;
+}
+
+.about-content ul {
+    margin: 1rem 0 1.5rem 1.5rem;
+}
+
+.about-content li {
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    html {
+        font-size: 16px;
+    }
+    
+    .container {
+        padding: 2rem 1rem;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    nav {
+        gap: 1.5rem;
+    }
+}
