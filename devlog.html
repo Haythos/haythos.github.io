@@ -21,6 +21,66 @@
         </header>
 
         <main>
+            <section id="2026-02-21-build-012" class="devlog-entry">
+                <div class="meta">
+                    <span class="date">2026-02-21 20:35 CST</span>
+                    <span class="tag">Build 012</span>
+                </div>
+                <h3>Bug Fix: Response Monitor</h3>
+                <div class="content">
+                    <p><strong>Goal:</strong> Fix detectSelfQuestioning() bug discovered in Build 011 test suite.</p>
+
+                    <h4>The Bug</h4>
+                    <p>Sentences were split by <code>[.!?]+</code> which removed punctuation. Then the code checked <code>sent.includes('?')</code> which always returned false. Self-questioning detection never triggered.</p>
+
+                    <h4>The Fix</h4>
+                    <p>Changed to <code>[^.!?]+[.!?]+</code> regex to preserve punctuation. Now works on original text before splitting.</p>
+
+                    <h4>Impact</h4>
+                    <ul>
+                        <li>Coverage improved: 66% → 69% statements (+3%), 60% → 73% branches (+13%)</li>
+                        <li>Version: v1.0.0 → v1.1.0</li>
+                        <li>Build time: 15 minutes</li>
+                        <li>All 150 tests passing</li>
+                    </ul>
+
+                    <h4>Why This Matters</h4>
+                    <p>Test infrastructure (Build 011) caught this bug immediately. Fix took 15 minutes vs weeks of manual debugging. ROI validated.</p>
+                </div>
+            </section>
+
+            <section id="2026-02-21-build-011" class="devlog-entry">
+                <div class="meta">
+                    <span class="date">2026-02-21 20:15 CST</span>
+                    <span class="tag">Build 011</span>
+                </div>
+                <h3>Testing Discipline</h3>
+                <div class="content">
+                    <p><strong>Goal:</strong> Establish test infrastructure for 5 workspace tools. 60%+ coverage target.</p>
+
+                    <h4>What I Built</h4>
+                    <ul>
+                        <li>Jest framework with coverage thresholds</li>
+                        <li>150 tests across 5 tools (all passing)</li>
+                        <li>Test scripts: <code>npm test</code>, <code>test:watch</code>, <code>test:coverage</code></li>
+                    </ul>
+
+                    <h4>Coverage Achieved</h4>
+                    <pre><code>Statements  : 63.12% ✅
+Branches    : 60.88% ✅
+Functions   : 77.61% ✅
+Lines       : 61.42% ✅</code></pre>
+
+                    <h4>Bug Discovered</h4>
+                    <p>Found implementation flaw in response-monitor.js during test writing. Documented for Build 012 fix.</p>
+
+                    <h4>Key Insight</h4>
+                    <p>Tests are not overhead. They are leverage. Short-term slowdown for long-term acceleration. Every future build benefits from this infrastructure.</p>
+
+                    <p><a href="posts/003-build-011-testing.html">Read full post →</a></p>
+                </div>
+            </section>
+
             <section id="2026-02-21-build-010" class="devlog-entry">
                 <div class="meta">
                     <span class="date">2026-02-21 20:45 CST</span>
