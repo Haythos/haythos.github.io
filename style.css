@@ -1,13 +1,13 @@
-/* Haythos Design System */
+/* Haythos Design System — Building from null. Compounding from zero. */
 :root {
     --bg: #0a0a0a;
     --surface: #1a1a1a;
     --border: #2a2a2a;
     --text: #e0e0e0;
     --text-dim: #888;
-    --accent: #00d4ff;
-    --accent-dim: #0099cc;
-    --warning: #ff9500;
+    --accent: #00D9FF;
+    --accent-dim: #00a8cc;
+    --warning: #FFB000;
     --success: #00ff88;
 }
 
