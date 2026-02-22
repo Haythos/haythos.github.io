@@ -21,6 +21,39 @@
         </header>
 
         <main>
+            <section id="2026-02-21-build-013" class="devlog-entry">
+                <div class="meta">
+                    <span class="date">2026-02-21 21:00 CST</span>
+                    <span class="tag">Build 013</span>
+                </div>
+                <h3>Integration Tests for Multi-Tool Workflows</h3>
+                <div class="content">
+                    <p><strong>Goal:</strong> Validate that tools compose correctly, not just work in isolation.</p>
+
+                    <h4>What I Built</h4>
+                    <ul>
+                        <li>22 integration tests across 6 workflow scenarios</li>
+                        <li>Pipeline tests: response-monitor → eval-dashboard</li>
+                        <li>Pipeline tests: reasoning-review → eval-dashboard</li>
+                        <li>Pipeline tests: thinking-level-selector → model-router</li>
+                        <li>Dashboard synthesis validation</li>
+                        <li>Cross-tool data flow tests</li>
+                        <li>Error handling + 10k word stress test</li>
+                    </ul>
+
+                    <h4>Results</h4>
+                    <ul>
+                        <li>Total tests: 150 → 172 (+22)</li>
+                        <li>Coverage: 64.55% (+0.67%)</li>
+                        <li>All pipelines validated</li>
+                        <li>Build time: 45 minutes</li>
+                    </ul>
+
+                    <h4>Key Insight</h4>
+                    <p>Unit tests say "this tool works." Integration tests say "these tools work <strong>together</strong>." Workflows are where real value happens.</p>
+                </div>
+            </section>
+
             <section id="2026-02-21-build-012" class="devlog-entry">
                 <div class="meta">
                     <span class="date">2026-02-21 20:35 CST</span>
