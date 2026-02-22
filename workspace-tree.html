@@ -1,0 +1,2815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workspace Structure - Haythos</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      background: #0a0a0f;
+      color: #e0e0e0;
+      font-family: 'Consolas', 'Monaco', monospace;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    
+    .header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid rgba(74, 158, 255, 0.3);
+    }
+    
+    h1 {
+      color: #4a9eff;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+    
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .stat-value {
+      color: #4a9eff;
+      font-weight: bold;
+    }
+    
+    .controls {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+    
+    button {
+      background: rgba(74, 158, 255, 0.1);
+      border: 1px solid rgba(74, 158, 255, 0.3);
+      color: #4a9eff;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      background: rgba(74, 158, 255, 0.2);
+    }
+    
+    .tree {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(74, 158, 255, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+    
+    .node {
+      margin-left: 1.5rem;
+    }
+    
+    .node-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0;
+      cursor: pointer;
+      transition: background 0.1s;
+      border-radius: 4px;
+      padding-left: 0.5rem;
+    }
+    
+    .node-line:hover {
+      background: rgba(74, 158, 255, 0.1);
+    }
+    
+    .toggle {
+      width: 1rem;
+      color: #4a9eff;
+      font-weight: bold;
+      user-select: none;
+    }
+    
+    .icon {
+      width: 1.2rem;
+      user-select: none;
+    }
+    
+    .directory {
+      color: #ffd700;
+    }
+    
+    .file {
+      color: #4a9eff;
+    }
+    
+    .name {
+      flex: 1;
+    }
+    
+    .meta {
+      font-size: 0.85rem;
+      color: #666;
+      display: flex;
+      gap: 1rem;
+    }
+    
+    .children {
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    
+    .collapsed {
+      max-height: 0 !important;
+    }
+    
+    .file-count {
+      color: #888;
+      font-size: 0.85rem;
+    }
+    
+    .search {
+      width: 100%;
+      max-width: 400px;
+      padding: 0.5rem 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(74, 158, 255, 0.3);
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-family: inherit;
+      margin-bottom: 1rem;
+    }
+    
+    .highlight {
+      background: rgba(255, 215, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>␀ Workspace Structure</h1>
+    <div class="stats">
+      <div class="stat">
+        <span>Files:</span>
+        <span class="stat-value" id="fileCount">0</span>
+      </div>
+      <div class="stat">
+        <span>Directories:</span>
+        <span class="stat-value" id="dirCount">0</span>
+      </div>
+      <div class="stat">
+        <span>Generated:</span>
+        <span class="stat-value">2/22/2026, 1:38:52 AM</span>
+      </div>
+    </div>
+  </div>
+  
+  <input type="text" class="search" id="search" placeholder="Search files and directories...">
+  
+  <div class="controls">
+    <button onclick="expandAll()">Expand All</button>
+    <button onclick="collapseAll()">Collapse All</button>
+  </div>
+  
+  <div class="tree" id="tree"></div>
+  
+  <script>
+    const treeData = {
+  "name": "workspace",
+  "path": ".",
+  "type": "directory",
+  "size": 4096,
+  "modified": "2026-02-22T07:37:48.437Z",
+  "children": [
+    {
+      "name": ".clawdhub",
+      "path": ".clawdhub",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-15T02:28:50.788Z",
+      "children": [
+        {
+          "name": "lock.json",
+          "path": ".clawdhub/lock.json",
+          "type": "file",
+          "size": 1102,
+          "modified": "2026-02-16T02:36:07.274Z",
+          "ext": ".json",
+          "fileType": "json"
+        }
+      ],
+      "fileCount": 1,
+      "dirCount": 0
+    },
+    {
+      "name": ".openclaw",
+      "path": ".openclaw",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-15T17:52:09.414Z",
+      "children": [
+        {
+          "name": "workspace-state.json",
+          "path": ".openclaw/workspace-state.json",
+          "type": "file",
+          "size": 74,
+          "modified": "2026-02-15T17:52:09.414Z",
+          "ext": ".json",
+          "fileType": "json"
+        }
+      ],
+      "fileCount": 1,
+      "dirCount": 0
+    },
+    {
+      "name": "agents",
+      "path": "agents",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-21T00:19:04.200Z",
+      "children": [
+        {
+          "name": "trading",
+          "path": "agents/trading",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-21T04:30:05.032Z",
+          "children": [
+            {
+              "name": "data",
+              "path": "agents/trading/data",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-21T04:25:12.164Z",
+              "children": [
+                {
+                  "name": "archive",
+                  "path": "agents/trading/data/archive",
+                  "type": "directory",
+                  "size": 4096,
+                  "modified": "2026-02-21T04:25:12.164Z",
+                  "children": [
+                    {
+                      "name": "paper-trades-batch1-realistic.jsonl",
+                      "path": "agents/trading/data/archive/paper-trades-batch1-realistic.jsonl",
+                      "type": "file",
+                      "size": 27429,
+                      "modified": "2026-02-21T04:16:50.360Z",
+                      "ext": ".jsonl",
+                      "fileType": "text"
+                    },
+                    {
+                      "name": "paper-trades-batch2-realistic.jsonl",
+                      "path": "agents/trading/data/archive/paper-trades-batch2-realistic.jsonl",
+                      "type": "file",
+                      "size": 71490,
+                      "modified": "2026-02-21T04:23:32.464Z",
+                      "ext": ".jsonl",
+                      "fileType": "text"
+                    }
+                  ],
+                  "fileCount": 2,
+                  "dirCount": 0
+                },
+                {
+                  "name": "analysis-batch1.json",
+                  "path": "agents/trading/data/analysis-batch1.json",
+                  "type": "file",
+                  "size": 0,
+                  "modified": "2026-02-21T03:45:38.608Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                },
+                {
+                  "name": "launches.jsonl",
+                  "path": "agents/trading/data/launches.jsonl",
+                  "type": "file",
+                  "size": 12613,
+                  "modified": "2026-02-21T00:26:31.668Z",
+                  "ext": ".jsonl",
+                  "fileType": "text"
+                },
+                {
+                  "name": "live-trades.jsonl",
+                  "path": "agents/trading/data/live-trades.jsonl",
+                  "type": "file",
+                  "size": 4377,
+                  "modified": "2026-02-21T02:50:13.332Z",
+                  "ext": ".jsonl",
+                  "fileType": "text"
+                },
+                {
+                  "name": "paper-trades-backup-20260220-210517.jsonl",
+                  "path": "agents/trading/data/paper-trades-backup-20260220-210517.jsonl",
+                  "type": "file",
+                  "size": 31986,
+                  "modified": "2026-02-21T03:05:08.080Z",
+                  "ext": ".jsonl",
+                  "fileType": "text"
+                },
+                {
+                  "name": "positions.json",
+                  "path": "agents/trading/data/positions.json",
+                  "type": "file",
+                  "size": 2,
+                  "modified": "2026-02-21T02:50:13.332Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                }
+              ],
+              "fileCount": 7,
+              "dirCount": 1
+            },
+            {
+              "name": "logs",
+              "path": "agents/trading/logs",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-21T00:21:00.884Z",
+              "children": [],
+              "fileCount": 0,
+              "dirCount": 0
+            },
+            {
+              "name": ".env",
+              "path": "agents/trading/.env",
+              "type": "file",
+              "size": 816,
+              "modified": "2026-02-21T02:47:46.820Z",
+              "ext": "",
+              "fileType": "text"
+            },
+            {
+              "name": ".env.example",
+              "path": "agents/trading/.env.example",
+              "type": "file",
+              "size": 394,
+              "modified": "2026-02-21T00:19:46.716Z",
+              "ext": ".example",
+              "fileType": "text"
+            },
+            {
+              "name": ".gitignore",
+              "path": "agents/trading/.gitignore",
+              "type": "file",
+              "size": 226,
+              "modified": "2026-02-21T00:21:06.224Z",
+              "ext": "",
+              "fileType": "text"
+            },
+            {
+              "name": "add-execution-delay.md",
+              "path": "agents/trading/add-execution-delay.md",
+              "type": "file",
+              "size": 2650,
+              "modified": "2026-02-21T04:07:35.524Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "ANALYSIS_BATCH1.md",
+              "path": "agents/trading/ANALYSIS_BATCH1.md",
+              "type": "file",
+              "size": 2232,
+              "modified": "2026-02-21T03:46:30.236Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "analyze-trades.js",
+              "path": "agents/trading/analyze-trades.js",
+              "type": "file",
+              "size": 5300,
+              "modified": "2026-02-21T03:46:05.780Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "analyze-trades.sh",
+              "path": "agents/trading/analyze-trades.sh",
+              "type": "file",
+              "size": 1379,
+              "modified": "2026-02-21T00:37:03.556Z",
+              "ext": ".sh",
+              "fileType": "shell"
+            },
+            {
+              "name": "batch1-realistic.log",
+              "path": "agents/trading/batch1-realistic.log",
+              "type": "file",
+              "size": 14605,
+              "modified": "2026-02-21T04:23:43.180Z",
+              "ext": ".log",
+              "fileType": "text"
+            },
+            {
+              "name": "BATCH2_EXPERIMENT.md",
+              "path": "agents/trading/BATCH2_EXPERIMENT.md",
+              "type": "file",
+              "size": 1919,
+              "modified": "2026-02-21T03:48:22.800Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "batch2-realistic.log",
+              "path": "agents/trading/batch2-realistic.log",
+              "type": "file",
+              "size": 20109,
+              "modified": "2026-02-21T04:23:32.464Z",
+              "ext": ".log",
+              "fileType": "text"
+            },
+            {
+              "name": "BOT-STOPPED.md",
+              "path": "agents/trading/BOT-STOPPED.md",
+              "type": "file",
+              "size": 1024,
+              "modified": "2026-02-21T02:16:55.440Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "check-batch2.sh",
+              "path": "agents/trading/check-batch2.sh",
+              "type": "file",
+              "size": 1028,
+              "modified": "2026-02-21T03:48:04.308Z",
+              "ext": ".sh",
+              "fileType": "shell"
+            },
+            {
+              "name": "check-momentum.sh",
+              "path": "agents/trading/check-momentum.sh",
+              "type": "file",
+              "size": 1916,
+              "modified": "2026-02-21T04:43:55.900Z",
+              "ext": ".sh",
+              "fileType": "shell"
+            },
+            {
+              "name": "check-progress.sh",
+              "path": "agents/trading/check-progress.sh",
+              "type": "file",
+              "size": 783,
+              "modified": "2026-02-21T03:05:00.588Z",
+              "ext": ".sh",
+              "fileType": "shell"
+            },
+            {
+              "name": "check-realistic-progress.sh",
+              "path": "agents/trading/check-realistic-progress.sh",
+              "type": "file",
+              "size": 2039,
+              "modified": "2026-02-21T04:14:11.840Z",
+              "ext": ".sh",
+              "fileType": "shell"
+            },
+            {
+              "name": "IMPLEMENTATION-COMPLETE.md",
+              "path": "agents/trading/IMPLEMENTATION-COMPLETE.md",
+              "type": "file",
+              "size": 6046,
+              "modified": "2026-02-21T00:27:36.780Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "LIVE-SETUP.md",
+              "path": "agents/trading/LIVE-SETUP.md",
+              "type": "file",
+              "size": 3299,
+              "modified": "2026-02-21T01:27:13.588Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "live-trader-v2.js",
+              "path": "agents/trading/live-trader-v2.js",
+              "type": "file",
+              "size": 25049,
+              "modified": "2026-02-21T02:53:38.772Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "live-trader.js",
+              "path": "agents/trading/live-trader.js",
+              "type": "file",
+              "size": 15558,
+              "modified": "2026-02-21T01:42:31.440Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "MOMENTUM_STRATEGY.md",
+              "path": "agents/trading/MOMENTUM_STRATEGY.md",
+              "type": "file",
+              "size": 3854,
+              "modified": "2026-02-21T04:26:03.612Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "momentum-trader-old.log",
+              "path": "agents/trading/momentum-trader-old.log",
+              "type": "file",
+              "size": 7039,
+              "modified": "2026-02-21T04:29:23.472Z",
+              "ext": ".log",
+              "fileType": "text"
+            },
+            {
+              "name": "momentum-trader.log",
+              "path": "agents/trading/momentum-trader.log",
+              "type": "file",
+              "size": 61877,
+              "modified": "2026-02-21T05:13:59.612Z",
+              "ext": ".log",
+              "fileType": "text"
+            },
+            {
+              "name": "NEXT-SESSION.md",
+              "path": "agents/trading/NEXT-SESSION.md",
+              "type": "file",
+              "size": 2956,
+              "modified": "2026-02-21T00:28:18.416Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "package-lock.json",
+              "path": "agents/trading/package-lock.json",
+              "type": "file",
+              "size": 107591,
+              "modified": "2026-02-21T01:33:42.436Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "package.json",
+              "path": "agents/trading/package.json",
+              "type": "file",
+              "size": 414,
+              "modified": "2026-02-21T01:33:42.400Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "paper-trader-batch2.log",
+              "path": "agents/trading/paper-trader-batch2.log",
+              "type": "file",
+              "size": 27062,
+              "modified": "2026-02-21T04:04:24.824Z",
+              "ext": ".log",
+              "fileType": "text"
+            },
+            {
+              "name": "paper-trader-momentum.js",
+              "path": "agents/trading/paper-trader-momentum.js",
+              "type": "file",
+              "size": 14881,
+              "modified": "2026-02-21T04:43:44.668Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "paper-trader-output.log",
+              "path": "agents/trading/paper-trader-output.log",
+              "type": "file",
+              "size": 34741,
+              "modified": "2026-02-21T03:44:34.568Z",
+              "ext": ".log",
+              "fileType": "text"
+            },
+            {
+              "name": "paper-trader-v2-backup.js",
+              "path": "agents/trading/paper-trader-v2-backup.js",
+              "type": "file",
+              "size": 12240,
+              "modified": "2026-02-21T04:12:24.316Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "paper-trader-v2.js",
+              "path": "agents/trading/paper-trader-v2.js",
+              "type": "file",
+              "size": 12240,
+              "modified": "2026-02-21T04:12:03.876Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "paper-trader-v3-realistic.js",
+              "path": "agents/trading/paper-trader-v3-realistic.js",
+              "type": "file",
+              "size": 12354,
+              "modified": "2026-02-21T04:13:26.512Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "paper-trader-ws.js",
+              "path": "agents/trading/paper-trader-ws.js",
+              "type": "file",
+              "size": 9294,
+              "modified": "2026-02-21T00:55:30.892Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "paper-trader.js",
+              "path": "agents/trading/paper-trader.js",
+              "type": "file",
+              "size": 10927,
+              "modified": "2026-02-21T00:44:46.876Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "PAPER-TRADING.md",
+              "path": "agents/trading/PAPER-TRADING.md",
+              "type": "file",
+              "size": 4077,
+              "modified": "2026-02-21T00:37:44.980Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "PRE-LAUNCH-CHECKLIST.md",
+              "path": "agents/trading/PRE-LAUNCH-CHECKLIST.md",
+              "type": "file",
+              "size": 4714,
+              "modified": "2026-02-21T01:34:22.432Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "pump-monitor.js",
+              "path": "agents/trading/pump-monitor.js",
+              "type": "file",
+              "size": 7464,
+              "modified": "2026-02-21T00:26:27.248Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "QUICKSTART.md",
+              "path": "agents/trading/QUICKSTART.md",
+              "type": "file",
+              "size": 3302,
+              "modified": "2026-02-21T02:57:37.096Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "README.md",
+              "path": "agents/trading/README.md",
+              "type": "file",
+              "size": 6765,
+              "modified": "2026-02-21T02:56:20.012Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "REALISTIC_TIMING_EXPERIMENT.md",
+              "path": "agents/trading/REALISTIC_TIMING_EXPERIMENT.md",
+              "type": "file",
+              "size": 2976,
+              "modified": "2026-02-21T04:14:37.464Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "REBUILD-NOTES.md",
+              "path": "agents/trading/REBUILD-NOTES.md",
+              "type": "file",
+              "size": 6054,
+              "modified": "2026-02-21T01:51:50.140Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "run-batch1-realistic.sh",
+              "path": "agents/trading/run-batch1-realistic.sh",
+              "type": "file",
+              "size": 479,
+              "modified": "2026-02-21T04:13:36.028Z",
+              "ext": ".sh",
+              "fileType": "shell"
+            },
+            {
+              "name": "run-batch2-realistic.sh",
+              "path": "agents/trading/run-batch2-realistic.sh",
+              "type": "file",
+              "size": 480,
+              "modified": "2026-02-21T04:13:40.360Z",
+              "ext": ".sh",
+              "fileType": "shell"
+            },
+            {
+              "name": "SESSION_SUMMARY.md",
+              "path": "agents/trading/SESSION_SUMMARY.md",
+              "type": "file",
+              "size": 5279,
+              "modified": "2026-02-21T02:58:15.976Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "setup-wallet.js",
+              "path": "agents/trading/setup-wallet.js",
+              "type": "file",
+              "size": 3331,
+              "modified": "2026-02-21T00:20:31.232Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "START_HERE.md",
+              "path": "agents/trading/START_HERE.md",
+              "type": "file",
+              "size": 2837,
+              "modified": "2026-02-21T02:58:39.800Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "STATUS.md",
+              "path": "agents/trading/STATUS.md",
+              "type": "file",
+              "size": 1796,
+              "modified": "2026-02-21T00:37:53.852Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "STRATEGY_PIVOT.md",
+              "path": "agents/trading/STRATEGY_PIVOT.md",
+              "type": "file",
+              "size": 4178,
+              "modified": "2026-02-21T04:21:09.572Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "STRATEGY_TESTING.md",
+              "path": "agents/trading/STRATEGY_TESTING.md",
+              "type": "file",
+              "size": 4972,
+              "modified": "2026-02-21T02:56:51.904Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "test-sell.js",
+              "path": "agents/trading/test-sell.js",
+              "type": "file",
+              "size": 1993,
+              "modified": "2026-02-21T02:54:04.164Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            }
+          ],
+          "fileCount": 56,
+          "dirCount": 2
+        }
+      ],
+      "fileCount": 56,
+      "dirCount": 1
+    },
+    {
+      "name": "backups",
+      "path": "backups",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-22T00:49:28.063Z",
+      "children": [
+        {
+          "name": "pre-reset-20260221-184928",
+          "path": "backups/pre-reset-20260221-184928",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-22T00:49:28.071Z",
+          "children": [
+            {
+              "name": "memory",
+              "path": "backups/pre-reset-20260221-184928/memory",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-22T00:49:28.082Z",
+              "children": [
+                {
+                  "name": "archive",
+                  "path": "backups/pre-reset-20260221-184928/memory/archive",
+                  "type": "directory",
+                  "size": 4096,
+                  "modified": "2026-02-22T00:49:28.071Z",
+                  "children": [
+                    {
+                      "name": "2026-02-15-0543.md",
+                      "path": "backups/pre-reset-20260221-184928/memory/archive/2026-02-15-0543.md",
+                      "type": "file",
+                      "size": 2876,
+                      "modified": "2026-02-22T00:49:28.071Z",
+                      "ext": ".md",
+                      "fileType": "markdown"
+                    },
+                    {
+                      "name": "2026-02-15-learning-reflection.md",
+                      "path": "backups/pre-reset-20260221-184928/memory/archive/2026-02-15-learning-reflection.md",
+                      "type": "file",
+                      "size": 4075,
+                      "modified": "2026-02-22T00:49:28.071Z",
+                      "ext": ".md",
+                      "fileType": "markdown"
+                    },
+                    {
+                      "name": "2026-02-15-x-api-setup.md",
+                      "path": "backups/pre-reset-20260221-184928/memory/archive/2026-02-15-x-api-setup.md",
+                      "type": "file",
+                      "size": 4791,
+                      "modified": "2026-02-22T00:49:28.071Z",
+                      "ext": ".md",
+                      "fileType": "markdown"
+                    }
+                  ],
+                  "fileCount": 3,
+                  "dirCount": 0
+                },
+                {
+                  "name": "knowledge",
+                  "path": "backups/pre-reset-20260221-184928/memory/knowledge",
+                  "type": "directory",
+                  "size": 4096,
+                  "modified": "2026-02-22T00:49:28.082Z",
+                  "children": [
+                    {
+                      "name": "ai-concepts.md",
+                      "path": "backups/pre-reset-20260221-184928/memory/knowledge/ai-concepts.md",
+                      "type": "file",
+                      "size": 8422,
+                      "modified": "2026-02-22T00:49:28.082Z",
+                      "ext": ".md",
+                      "fileType": "markdown"
+                    }
+                  ],
+                  "fileCount": 1,
+                  "dirCount": 0
+                },
+                {
+                  "name": "2025-02-14.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2025-02-14.md",
+                  "type": "file",
+                  "size": 2750,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2025-06-30.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2025-06-30.md",
+                  "type": "file",
+                  "size": 2535,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-15.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-15.md",
+                  "type": "file",
+                  "size": 46871,
+                  "modified": "2026-02-22T00:49:28.082Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-20-2330.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-20-2330.md",
+                  "type": "file",
+                  "size": 149,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-20-token-optimization.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-20-token-optimization.md",
+                  "type": "file",
+                  "size": 1579,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-20.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-20.md",
+                  "type": "file",
+                  "size": 4121,
+                  "modified": "2026-02-22T00:49:28.071Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-0032.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-0032.md",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-0217.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-0217.md",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-0300.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-0300.md",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-0510.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-0510.md",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-0512.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-0512.md",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-0515.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-0515.md",
+                  "type": "file",
+                  "size": 163,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-0526.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-0526.md",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-0538.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-0538.md",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21-blog-check.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21-blog-check.md",
+                  "type": "file",
+                  "size": 17015,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "2026-02-21.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/2026-02-21.md",
+                  "type": "file",
+                  "size": 3362,
+                  "modified": "2026-02-22T00:49:28.071Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "active-tasks.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/active-tasks.md",
+                  "type": "file",
+                  "size": 757,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "activity-log.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/activity-log.md",
+                  "type": "file",
+                  "size": 5080,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "cultural-knowledge.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/cultural-knowledge.md",
+                  "type": "file",
+                  "size": 7343,
+                  "modified": "2026-02-22T00:49:28.082Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "erc-8004-notes.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/erc-8004-notes.md",
+                  "type": "file",
+                  "size": 4410,
+                  "modified": "2026-02-22T00:49:28.082Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "feature-implementation-use-cases.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/feature-implementation-use-cases.md",
+                  "type": "file",
+                  "size": 13454,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "implementation-queue.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/implementation-queue.md",
+                  "type": "file",
+                  "size": 21571,
+                  "modified": "2026-02-22T00:49:28.071Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "lessons-learned.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/lessons-learned.md",
+                  "type": "file",
+                  "size": 2275,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "openclaw-feature-audit.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/openclaw-feature-audit.md",
+                  "type": "file",
+                  "size": 7541,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "openclaw-improvement-research.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/openclaw-improvement-research.md",
+                  "type": "file",
+                  "size": 3141,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "opinions.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/opinions.md",
+                  "type": "file",
+                  "size": 4089,
+                  "modified": "2026-02-22T00:49:28.082Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "research-log.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/research-log.md",
+                  "type": "file",
+                  "size": 6307,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "research-queue.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/research-queue.md",
+                  "type": "file",
+                  "size": 11949,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "sub-agent-log.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/sub-agent-log.md",
+                  "type": "file",
+                  "size": 1436,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "sub-agent-patterns.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/sub-agent-patterns.md",
+                  "type": "file",
+                  "size": 7635,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "thinking-level-log.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/thinking-level-log.md",
+                  "type": "file",
+                  "size": 2841,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "thinking-level-logic.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/thinking-level-logic.md",
+                  "type": "file",
+                  "size": 6521,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "token-crisis-analysis.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/token-crisis-analysis.md",
+                  "type": "file",
+                  "size": 4855,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "tool-usage-log.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/tool-usage-log.md",
+                  "type": "file",
+                  "size": 5653,
+                  "modified": "2026-02-22T00:49:28.079Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "weekly-focus.md",
+                  "path": "backups/pre-reset-20260221-184928/memory/weekly-focus.md",
+                  "type": "file",
+                  "size": 4033,
+                  "modified": "2026-02-22T00:49:28.075Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                }
+              ],
+              "fileCount": 39,
+              "dirCount": 2
+            },
+            {
+              "name": "IDENTITY.md",
+              "path": "backups/pre-reset-20260221-184928/IDENTITY.md",
+              "type": "file",
+              "size": 636,
+              "modified": "2026-02-22T00:49:28.067Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "MEMORY.md",
+              "path": "backups/pre-reset-20260221-184928/MEMORY.md",
+              "type": "file",
+              "size": 2550,
+              "modified": "2026-02-22T00:49:28.067Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "SOUL.md",
+              "path": "backups/pre-reset-20260221-184928/SOUL.md",
+              "type": "file",
+              "size": 4891,
+              "modified": "2026-02-22T00:49:28.067Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "USER.md",
+              "path": "backups/pre-reset-20260221-184928/USER.md",
+              "type": "file",
+              "size": 1202,
+              "modified": "2026-02-22T00:49:28.067Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 43,
+          "dirCount": 1
+        }
+      ],
+      "fileCount": 43,
+      "dirCount": 1
+    },
+    {
+      "name": "data",
+      "path": "data",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-22T01:12:05.539Z",
+      "children": [
+        {
+          "name": "dashboard.html",
+          "path": "data/dashboard.html",
+          "type": "file",
+          "size": 19643,
+          "modified": "2026-02-22T04:53:52.100Z",
+          "ext": ".html",
+          "fileType": "text"
+        },
+        {
+          "name": "metrics.jsonl",
+          "path": "data/metrics.jsonl",
+          "type": "file",
+          "size": 15495,
+          "modified": "2026-02-22T04:55:09.557Z",
+          "ext": ".jsonl",
+          "fileType": "text"
+        }
+      ],
+      "fileCount": 2,
+      "dirCount": 0
+    },
+    {
+      "name": "haythos.github.io",
+      "path": "haythos.github.io",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-22T02:02:55.536Z",
+      "children": [
+        {
+          "name": "posts",
+          "path": "haythos.github.io/posts",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-22T02:16:38.187Z",
+          "children": [
+            {
+              "name": "002-build-010-evaluation.html",
+              "path": "haythos.github.io/posts/002-build-010-evaluation.html",
+              "type": "file",
+              "size": 7773,
+              "modified": "2026-02-22T02:02:55.536Z",
+              "ext": ".html",
+              "fileType": "text"
+            },
+            {
+              "name": "003-build-011-testing.html",
+              "path": "haythos.github.io/posts/003-build-011-testing.html",
+              "type": "file",
+              "size": 7731,
+              "modified": "2026-02-22T02:16:38.191Z",
+              "ext": ".html",
+              "fileType": "text"
+            }
+          ],
+          "fileCount": 2,
+          "dirCount": 0
+        },
+        {
+          "name": "builds.html",
+          "path": "haythos.github.io/builds.html",
+          "type": "file",
+          "size": 4491,
+          "modified": "2026-02-22T02:32:28.558Z",
+          "ext": ".html",
+          "fileType": "text"
+        },
+        {
+          "name": "devlog.html",
+          "path": "haythos.github.io/devlog.html",
+          "type": "file",
+          "size": 10326,
+          "modified": "2026-02-22T02:32:28.554Z",
+          "ext": ".html",
+          "fileType": "text"
+        },
+        {
+          "name": "index.html",
+          "path": "haythos.github.io/index.html",
+          "type": "file",
+          "size": 3502,
+          "modified": "2026-02-22T02:02:46.276Z",
+          "ext": ".html",
+          "fileType": "text"
+        },
+        {
+          "name": "style.css",
+          "path": "haythos.github.io/style.css",
+          "type": "file",
+          "size": 4519,
+          "modified": "2026-02-22T02:02:31.211Z",
+          "ext": ".css",
+          "fileType": "text"
+        }
+      ],
+      "fileCount": 6,
+      "dirCount": 1
+    },
+    {
+      "name": "learning",
+      "path": "learning",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-08T07:40:25.065Z",
+      "children": [
+        {
+          "name": "ai-journey.md",
+          "path": "learning/ai-journey.md",
+          "type": "file",
+          "size": 2086,
+          "modified": "2026-02-08T07:40:25.065Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        }
+      ],
+      "fileCount": 1,
+      "dirCount": 0
+    },
+    {
+      "name": "memory",
+      "path": "memory",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-22T07:18:08.534Z",
+      "children": [
+        {
+          "name": "2026-02-21.md",
+          "path": "memory/2026-02-21.md",
+          "type": "file",
+          "size": 1702,
+          "modified": "2026-02-22T00:51:38.028Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "2026-02-22-0054.md",
+          "path": "memory/2026-02-22-0054.md",
+          "type": "file",
+          "size": 148,
+          "modified": "2026-02-22T00:54:37.043Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "2026-02-22-0125.md",
+          "path": "memory/2026-02-22-0125.md",
+          "type": "file",
+          "size": 148,
+          "modified": "2026-02-22T01:25:20.134Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "2026-02-22-0207.md",
+          "path": "memory/2026-02-22-0207.md",
+          "type": "file",
+          "size": 148,
+          "modified": "2026-02-22T02:07:44.435Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "2026-02-22-0237.md",
+          "path": "memory/2026-02-22-0237.md",
+          "type": "file",
+          "size": 148,
+          "modified": "2026-02-22T02:37:39.565Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "2026-02-22-0718.md",
+          "path": "memory/2026-02-22-0718.md",
+          "type": "file",
+          "size": 149,
+          "modified": "2026-02-22T07:18:08.534Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "implementation-queue.md",
+          "path": "memory/implementation-queue.md",
+          "type": "file",
+          "size": 22761,
+          "modified": "2026-02-22T00:51:02.532Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        }
+      ],
+      "fileCount": 7,
+      "dirCount": 0
+    },
+    {
+      "name": "research",
+      "path": "research",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-21T00:14:44.120Z",
+      "children": [
+        {
+          "name": "onchain-agent-economics.md",
+          "path": "research/onchain-agent-economics.md",
+          "type": "file",
+          "size": 14791,
+          "modified": "2026-02-21T00:01:35.904Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "onchain-agent-trading-ecosystem.md",
+          "path": "research/onchain-agent-trading-ecosystem.md",
+          "type": "file",
+          "size": 10894,
+          "modified": "2026-02-21T00:14:44.120Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        }
+      ],
+      "fileCount": 2,
+      "dirCount": 0
+    },
+    {
+      "name": "skills",
+      "path": "skills",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-22T05:07:18.455Z",
+      "children": [
+        {
+          "name": "agent-autonomy-kit",
+          "path": "skills/agent-autonomy-kit",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-16T02:35:26.188Z",
+          "children": [
+            {
+              "name": ".clawdhub",
+              "path": "skills/agent-autonomy-kit/.clawdhub",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-16T02:35:26.188Z",
+              "children": [
+                {
+                  "name": "origin.json",
+                  "path": "skills/agent-autonomy-kit/.clawdhub/origin.json",
+                  "type": "file",
+                  "size": 150,
+                  "modified": "2026-02-16T02:35:26.188Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                }
+              ],
+              "fileCount": 1,
+              "dirCount": 0
+            },
+            {
+              "name": "templates",
+              "path": "skills/agent-autonomy-kit/templates",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-16T02:35:26.188Z",
+              "children": [
+                {
+                  "name": "HEARTBEAT.md",
+                  "path": "skills/agent-autonomy-kit/templates/HEARTBEAT.md",
+                  "type": "file",
+                  "size": 904,
+                  "modified": "2026-02-16T02:35:26.188Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "QUEUE.md",
+                  "path": "skills/agent-autonomy-kit/templates/QUEUE.md",
+                  "type": "file",
+                  "size": 562,
+                  "modified": "2026-02-16T02:35:26.188Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                }
+              ],
+              "fileCount": 2,
+              "dirCount": 0
+            },
+            {
+              "name": "_meta.json",
+              "path": "skills/agent-autonomy-kit/_meta.json",
+              "type": "file",
+              "size": 137,
+              "modified": "2026-02-16T02:35:26.188Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "README.md",
+              "path": "skills/agent-autonomy-kit/README.md",
+              "type": "file",
+              "size": 8514,
+              "modified": "2026-02-16T02:35:26.188Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "SKILL.md",
+              "path": "skills/agent-autonomy-kit/SKILL.md",
+              "type": "file",
+              "size": 750,
+              "modified": "2026-02-16T02:35:26.188Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 6,
+          "dirCount": 2
+        },
+        {
+          "name": "ai-researcher",
+          "path": "skills/ai-researcher",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-15T02:43:18.067Z",
+          "children": [
+            {
+              "name": ".clawdhub",
+              "path": "skills/ai-researcher/.clawdhub",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-15T02:43:18.067Z",
+              "children": [
+                {
+                  "name": "origin.json",
+                  "path": "skills/ai-researcher/.clawdhub/origin.json",
+                  "type": "file",
+                  "size": 145,
+                  "modified": "2026-02-15T02:43:18.067Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                }
+              ],
+              "fileCount": 1,
+              "dirCount": 0
+            },
+            {
+              "name": "_meta.json",
+              "path": "skills/ai-researcher/_meta.json",
+              "type": "file",
+              "size": 132,
+              "modified": "2026-02-15T02:43:18.067Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "README.md",
+              "path": "skills/ai-researcher/README.md",
+              "type": "file",
+              "size": 1248,
+              "modified": "2026-02-15T02:43:18.067Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "SKILL.md",
+              "path": "skills/ai-researcher/SKILL.md",
+              "type": "file",
+              "size": 1898,
+              "modified": "2026-02-15T02:43:18.067Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 4,
+          "dirCount": 1
+        },
+        {
+          "name": "automation-workflows",
+          "path": "skills/automation-workflows",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-15T18:10:49.145Z",
+          "children": [
+            {
+              "name": ".clawdhub",
+              "path": "skills/automation-workflows/.clawdhub",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-15T18:10:49.145Z",
+              "children": [
+                {
+                  "name": "origin.json",
+                  "path": "skills/automation-workflows/.clawdhub/origin.json",
+                  "type": "file",
+                  "size": 152,
+                  "modified": "2026-02-15T18:10:49.145Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                }
+              ],
+              "fileCount": 1,
+              "dirCount": 0
+            },
+            {
+              "name": "_meta.json",
+              "path": "skills/automation-workflows/_meta.json",
+              "type": "file",
+              "size": 139,
+              "modified": "2026-02-15T18:10:49.145Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "SKILL.md",
+              "path": "skills/automation-workflows/SKILL.md",
+              "type": "file",
+              "size": 10358,
+              "modified": "2026-02-15T18:10:49.141Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 3,
+          "dirCount": 1
+        },
+        {
+          "name": "bankr",
+          "path": "skills/bankr",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-22T05:07:18.447Z",
+          "children": [
+            {
+              "name": "references",
+              "path": "skills/bankr/references",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-22T05:07:18.447Z",
+              "children": [
+                {
+                  "name": "api-workflow.md",
+                  "path": "skills/bankr/references/api-workflow.md",
+                  "type": "file",
+                  "size": 10665,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "arbitrary-transaction.md",
+                  "path": "skills/bankr/references/arbitrary-transaction.md",
+                  "type": "file",
+                  "size": 3315,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "automation.md",
+                  "path": "skills/bankr/references/automation.md",
+                  "type": "file",
+                  "size": 6260,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "error-handling.md",
+                  "path": "skills/bankr/references/error-handling.md",
+                  "type": "file",
+                  "size": 8524,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "leverage-trading.md",
+                  "path": "skills/bankr/references/leverage-trading.md",
+                  "type": "file",
+                  "size": 7236,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "llm-gateway.md",
+                  "path": "skills/bankr/references/llm-gateway.md",
+                  "type": "file",
+                  "size": 7413,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "market-research.md",
+                  "path": "skills/bankr/references/market-research.md",
+                  "type": "file",
+                  "size": 3002,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "nft-operations.md",
+                  "path": "skills/bankr/references/nft-operations.md",
+                  "type": "file",
+                  "size": 3676,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "polymarket.md",
+                  "path": "skills/bankr/references/polymarket.md",
+                  "type": "file",
+                  "size": 4961,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "portfolio.md",
+                  "path": "skills/bankr/references/portfolio.md",
+                  "type": "file",
+                  "size": 1837,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "safety.md",
+                  "path": "skills/bankr/references/safety.md",
+                  "type": "file",
+                  "size": 14477,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "sign-submit-api.md",
+                  "path": "skills/bankr/references/sign-submit-api.md",
+                  "type": "file",
+                  "size": 8146,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "token-deployment.md",
+                  "path": "skills/bankr/references/token-deployment.md",
+                  "type": "file",
+                  "size": 10784,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "token-trading.md",
+                  "path": "skills/bankr/references/token-trading.md",
+                  "type": "file",
+                  "size": 2153,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "transfers.md",
+                  "path": "skills/bankr/references/transfers.md",
+                  "type": "file",
+                  "size": 2965,
+                  "modified": "2026-02-22T05:07:18.447Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                }
+              ],
+              "fileCount": 15,
+              "dirCount": 0
+            },
+            {
+              "name": "SKILL.md",
+              "path": "skills/bankr/SKILL.md",
+              "type": "file",
+              "size": 27434,
+              "modified": "2026-02-22T05:07:18.447Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 16,
+          "dirCount": 1
+        },
+        {
+          "name": "brainstorming",
+          "path": "skills/brainstorming",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-16T02:35:15.917Z",
+          "children": [
+            {
+              "name": ".clawdhub",
+              "path": "skills/brainstorming/.clawdhub",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-16T02:35:15.917Z",
+              "children": [
+                {
+                  "name": "origin.json",
+                  "path": "skills/brainstorming/.clawdhub/origin.json",
+                  "type": "file",
+                  "size": 145,
+                  "modified": "2026-02-16T02:35:15.917Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                }
+              ],
+              "fileCount": 1,
+              "dirCount": 0
+            },
+            {
+              "name": "_meta.json",
+              "path": "skills/brainstorming/_meta.json",
+              "type": "file",
+              "size": 132,
+              "modified": "2026-02-16T02:35:15.917Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "SKILL.md",
+              "path": "skills/brainstorming/SKILL.md",
+              "type": "file",
+              "size": 2505,
+              "modified": "2026-02-16T02:35:15.917Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 3,
+          "dirCount": 1
+        },
+        {
+          "name": "gcalcli-calendar",
+          "path": "skills/gcalcli-calendar",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-15T18:10:53.522Z",
+          "children": [
+            {
+              "name": ".clawdhub",
+              "path": "skills/gcalcli-calendar/.clawdhub",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-15T18:10:53.522Z",
+              "children": [
+                {
+                  "name": "origin.json",
+                  "path": "skills/gcalcli-calendar/.clawdhub/origin.json",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-15T18:10:53.522Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                }
+              ],
+              "fileCount": 1,
+              "dirCount": 0
+            },
+            {
+              "name": "_meta.json",
+              "path": "skills/gcalcli-calendar/_meta.json",
+              "type": "file",
+              "size": 135,
+              "modified": "2026-02-15T18:10:53.518Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "README.md",
+              "path": "skills/gcalcli-calendar/README.md",
+              "type": "file",
+              "size": 3716,
+              "modified": "2026-02-15T18:10:53.518Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "SKILL.md",
+              "path": "skills/gcalcli-calendar/SKILL.md",
+              "type": "file",
+              "size": 8253,
+              "modified": "2026-02-15T18:10:53.518Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 4,
+          "dirCount": 1
+        },
+        {
+          "name": "prompt-engineering-expert",
+          "path": "skills/prompt-engineering-expert",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-16T02:35:06.033Z",
+          "children": [
+            {
+              "name": ".clawdhub",
+              "path": "skills/prompt-engineering-expert/.clawdhub",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-16T02:35:06.033Z",
+              "children": [
+                {
+                  "name": "origin.json",
+                  "path": "skills/prompt-engineering-expert/.clawdhub/origin.json",
+                  "type": "file",
+                  "size": 157,
+                  "modified": "2026-02-16T02:35:06.033Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                }
+              ],
+              "fileCount": 1,
+              "dirCount": 0
+            },
+            {
+              "name": "docs",
+              "path": "skills/prompt-engineering-expert/docs",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-16T02:35:06.029Z",
+              "children": [
+                {
+                  "name": "BEST_PRACTICES.md",
+                  "path": "skills/prompt-engineering-expert/docs/BEST_PRACTICES.md",
+                  "type": "file",
+                  "size": 7866,
+                  "modified": "2026-02-16T02:35:06.029Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "TECHNIQUES.md",
+                  "path": "skills/prompt-engineering-expert/docs/TECHNIQUES.md",
+                  "type": "file",
+                  "size": 9388,
+                  "modified": "2026-02-16T02:35:06.029Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                },
+                {
+                  "name": "TROUBLESHOOTING.md",
+                  "path": "skills/prompt-engineering-expert/docs/TROUBLESHOOTING.md",
+                  "type": "file",
+                  "size": 6899,
+                  "modified": "2026-02-16T02:35:06.029Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                }
+              ],
+              "fileCount": 3,
+              "dirCount": 0
+            },
+            {
+              "name": "examples",
+              "path": "skills/prompt-engineering-expert/examples",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-16T02:35:06.029Z",
+              "children": [
+                {
+                  "name": "EXAMPLES.md",
+                  "path": "skills/prompt-engineering-expert/examples/EXAMPLES.md",
+                  "type": "file",
+                  "size": 8155,
+                  "modified": "2026-02-16T02:35:06.029Z",
+                  "ext": ".md",
+                  "fileType": "markdown"
+                }
+              ],
+              "fileCount": 1,
+              "dirCount": 0
+            },
+            {
+              "name": "_meta.json",
+              "path": "skills/prompt-engineering-expert/_meta.json",
+              "type": "file",
+              "size": 144,
+              "modified": "2026-02-16T02:35:06.033Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "CLAUDE.md",
+              "path": "skills/prompt-engineering-expert/CLAUDE.md",
+              "type": "file",
+              "size": 5391,
+              "modified": "2026-02-16T02:35:06.029Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "GETTING_STARTED.md",
+              "path": "skills/prompt-engineering-expert/GETTING_STARTED.md",
+              "type": "file",
+              "size": 6873,
+              "modified": "2026-02-16T02:35:06.029Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "INDEX.md",
+              "path": "skills/prompt-engineering-expert/INDEX.md",
+              "type": "file",
+              "size": 9163,
+              "modified": "2026-02-16T02:35:06.029Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "README.md",
+              "path": "skills/prompt-engineering-expert/README.md",
+              "type": "file",
+              "size": 7527,
+              "modified": "2026-02-16T02:35:06.029Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "SKILL.md",
+              "path": "skills/prompt-engineering-expert/SKILL.md",
+              "type": "file",
+              "size": 1614,
+              "modified": "2026-02-16T02:35:06.029Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "START_HERE.md",
+              "path": "skills/prompt-engineering-expert/START_HERE.md",
+              "type": "file",
+              "size": 8425,
+              "modified": "2026-02-16T02:35:06.029Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "SUMMARY.md",
+              "path": "skills/prompt-engineering-expert/SUMMARY.md",
+              "type": "file",
+              "size": 6647,
+              "modified": "2026-02-16T02:35:06.033Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 13,
+          "dirCount": 3
+        },
+        {
+          "name": "testing-patterns",
+          "path": "skills/testing-patterns",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-16T02:35:36.350Z",
+          "children": [
+            {
+              "name": ".clawdhub",
+              "path": "skills/testing-patterns/.clawdhub",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-16T02:35:36.350Z",
+              "children": [
+                {
+                  "name": "origin.json",
+                  "path": "skills/testing-patterns/.clawdhub/origin.json",
+                  "type": "file",
+                  "size": 148,
+                  "modified": "2026-02-16T02:35:36.350Z",
+                  "ext": ".json",
+                  "fileType": "json"
+                }
+              ],
+              "fileCount": 1,
+              "dirCount": 0
+            },
+            {
+              "name": "templates",
+              "path": "skills/testing-patterns/templates",
+              "type": "directory",
+              "size": 4096,
+              "modified": "2026-02-16T02:35:36.350Z",
+              "children": [
+                {
+                  "name": "platforms",
+                  "path": "skills/testing-patterns/templates/platforms",
+                  "type": "directory",
+                  "size": 4096,
+                  "modified": "2026-02-16T02:35:36.350Z",
+                  "children": [
+                    {
+                      "name": "claude-knowledge.md",
+                      "path": "skills/testing-patterns/templates/platforms/claude-knowledge.md",
+                      "type": "file",
+                      "size": 2613,
+                      "modified": "2026-02-16T02:35:36.350Z",
+                      "ext": ".md",
+                      "fileType": "markdown"
+                    },
+                    {
+                      "name": "copilot-instructions.md",
+                      "path": "skills/testing-patterns/templates/platforms/copilot-instructions.md",
+                      "type": "file",
+                      "size": 2020,
+                      "modified": "2026-02-16T02:35:36.350Z",
+                      "ext": ".md",
+                      "fileType": "markdown"
+                    },
+                    {
+                      "name": "cursorrules.md",
+                      "path": "skills/testing-patterns/templates/platforms/cursorrules.md",
+                      "type": "file",
+                      "size": 2263,
+                      "modified": "2026-02-16T02:35:36.350Z",
+                      "ext": ".md",
+                      "fileType": "markdown"
+                    }
+                  ],
+                  "fileCount": 3,
+                  "dirCount": 0
+                }
+              ],
+              "fileCount": 3,
+              "dirCount": 1
+            },
+            {
+              "name": "_meta.json",
+              "path": "skills/testing-patterns/_meta.json",
+              "type": "file",
+              "size": 135,
+              "modified": "2026-02-16T02:35:36.350Z",
+              "ext": ".json",
+              "fileType": "json"
+            },
+            {
+              "name": "README.md",
+              "path": "skills/testing-patterns/README.md",
+              "type": "file",
+              "size": 2480,
+              "modified": "2026-02-16T02:35:36.346Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            },
+            {
+              "name": "SKILL.md",
+              "path": "skills/testing-patterns/SKILL.md",
+              "type": "file",
+              "size": 14181,
+              "modified": "2026-02-16T02:35:36.346Z",
+              "ext": ".md",
+              "fileType": "markdown"
+            }
+          ],
+          "fileCount": 7,
+          "dirCount": 2
+        }
+      ],
+      "fileCount": 56,
+      "dirCount": 8
+    },
+    {
+      "name": "templates",
+      "path": "templates",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-15T20:03:10.137Z",
+      "children": [
+        {
+          "name": "sub-agent-blog.json",
+          "path": "templates/sub-agent-blog.json",
+          "type": "file",
+          "size": 735,
+          "modified": "2026-02-15T20:03:10.133Z",
+          "ext": ".json",
+          "fileType": "json"
+        },
+        {
+          "name": "sub-agent-build.json",
+          "path": "templates/sub-agent-build.json",
+          "type": "file",
+          "size": 749,
+          "modified": "2026-02-15T20:03:10.133Z",
+          "ext": ".json",
+          "fileType": "json"
+        },
+        {
+          "name": "sub-agent-experiment.json",
+          "path": "templates/sub-agent-experiment.json",
+          "type": "file",
+          "size": 697,
+          "modified": "2026-02-15T20:03:10.137Z",
+          "ext": ".json",
+          "fileType": "json"
+        },
+        {
+          "name": "sub-agent-research.json",
+          "path": "templates/sub-agent-research.json",
+          "type": "file",
+          "size": 716,
+          "modified": "2026-02-15T20:03:10.129Z",
+          "ext": ".json",
+          "fileType": "json"
+        }
+      ],
+      "fileCount": 4,
+      "dirCount": 0
+    },
+    {
+      "name": "tools",
+      "path": "tools",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-22T07:38:49.026Z",
+      "children": [
+        {
+          "name": "__tests__",
+          "path": "tools/__tests__",
+          "type": "directory",
+          "size": 4096,
+          "modified": "2026-02-22T02:30:05.930Z",
+          "children": [
+            {
+              "name": "eval-dashboard.test.js",
+              "path": "tools/__tests__/eval-dashboard.test.js",
+              "type": "file",
+              "size": 7557,
+              "modified": "2026-02-22T02:15:08.411Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "integration.test.js",
+              "path": "tools/__tests__/integration.test.js",
+              "type": "file",
+              "size": 16313,
+              "modified": "2026-02-22T02:31:15.753Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "model-router.test.js",
+              "path": "tools/__tests__/model-router.test.js",
+              "type": "file",
+              "size": 7529,
+              "modified": "2026-02-22T02:12:53.004Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "reasoning-review.test.js",
+              "path": "tools/__tests__/reasoning-review.test.js",
+              "type": "file",
+              "size": 10695,
+              "modified": "2026-02-22T02:12:17.921Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "response-monitor.test.js",
+              "path": "tools/__tests__/response-monitor.test.js",
+              "type": "file",
+              "size": 9219,
+              "modified": "2026-02-22T02:22:22.662Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            },
+            {
+              "name": "thinking-level-selector.test.js",
+              "path": "tools/__tests__/thinking-level-selector.test.js",
+              "type": "file",
+              "size": 9910,
+              "modified": "2026-02-22T02:14:00.421Z",
+              "ext": ".js",
+              "fileType": "javascript"
+            }
+          ],
+          "fileCount": 6,
+          "dirCount": 0
+        },
+        {
+          "name": "eval-dashboard.js",
+          "path": "tools/eval-dashboard.js",
+          "type": "file",
+          "size": 11496,
+          "modified": "2026-02-22T01:10:52.960Z",
+          "ext": ".js",
+          "fileType": "javascript"
+        },
+        {
+          "name": "jest.config.js",
+          "path": "tools/jest.config.js",
+          "type": "file",
+          "size": 545,
+          "modified": "2026-02-22T02:15:20.187Z",
+          "ext": ".js",
+          "fileType": "javascript"
+        },
+        {
+          "name": "model-router.js",
+          "path": "tools/model-router.js",
+          "type": "file",
+          "size": 3846,
+          "modified": "2026-02-20T23:17:11.688Z",
+          "ext": ".js",
+          "fileType": "javascript"
+        },
+        {
+          "name": "package-lock.json",
+          "path": "tools/package-lock.json",
+          "type": "file",
+          "size": 161170,
+          "modified": "2026-02-22T02:09:26.149Z",
+          "ext": ".json",
+          "fileType": "json"
+        },
+        {
+          "name": "package.json",
+          "path": "tools/package.json",
+          "type": "file",
+          "size": 855,
+          "modified": "2026-02-22T02:09:32.454Z",
+          "ext": ".json",
+          "fileType": "json"
+        },
+        {
+          "name": "README.md",
+          "path": "tools/README.md",
+          "type": "file",
+          "size": 2953,
+          "modified": "2026-02-22T01:20:51.642Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "reasoning-review-wrapper.sh",
+          "path": "tools/reasoning-review-wrapper.sh",
+          "type": "file",
+          "size": 571,
+          "modified": "2026-02-22T01:19:32.984Z",
+          "ext": ".sh",
+          "fileType": "shell"
+        },
+        {
+          "name": "reasoning-review.js",
+          "path": "tools/reasoning-review.js",
+          "type": "file",
+          "size": 9789,
+          "modified": "2026-02-22T00:49:21.828Z",
+          "ext": ".js",
+          "fileType": "javascript"
+        },
+        {
+          "name": "response-monitor-wrapper.sh",
+          "path": "tools/response-monitor-wrapper.sh",
+          "type": "file",
+          "size": 565,
+          "modified": "2026-02-22T01:19:32.980Z",
+          "ext": ".sh",
+          "fileType": "shell"
+        },
+        {
+          "name": "response-monitor.js",
+          "path": "tools/response-monitor.js",
+          "type": "file",
+          "size": 7484,
+          "modified": "2026-02-22T02:22:51.141Z",
+          "ext": ".js",
+          "fileType": "javascript"
+        },
+        {
+          "name": "self-portrait.js",
+          "path": "tools/self-portrait.js",
+          "type": "file",
+          "size": 16429,
+          "modified": "2026-02-15T22:48:55.572Z",
+          "ext": ".js",
+          "fileType": "javascript"
+        },
+        {
+          "name": "thinking-level-selector.js",
+          "path": "tools/thinking-level-selector.js",
+          "type": "file",
+          "size": 4721,
+          "modified": "2026-02-15T18:20:52.120Z",
+          "ext": ".js",
+          "fileType": "javascript"
+        },
+        {
+          "name": "workflow-helper.md",
+          "path": "tools/workflow-helper.md",
+          "type": "file",
+          "size": 7615,
+          "modified": "2026-02-15T18:42:30.811Z",
+          "ext": ".md",
+          "fileType": "markdown"
+        },
+        {
+          "name": "workspace-visualizer.js",
+          "path": "tools/workspace-visualizer.js",
+          "type": "file",
+          "size": 12117,
+          "modified": "2026-02-22T07:38:49.026Z",
+          "ext": ".js",
+          "fileType": "javascript"
+        }
+      ],
+      "fileCount": 20,
+      "dirCount": 1
+    },
+    {
+      "name": "visualizer",
+      "path": "visualizer",
+      "type": "directory",
+      "size": 4096,
+      "modified": "2026-02-08T03:25:22.306Z",
+      "children": [
+        {
+          "name": "index.html",
+          "path": "visualizer/index.html",
+          "type": "file",
+          "size": 17130,
+          "modified": "2026-02-08T03:36:55.320Z",
+          "ext": ".html",
+          "fileType": "text"
+        }
+      ],
+      "fileCount": 1,
+      "dirCount": 0
+    },
+    {
+      "name": ".gitignore",
+      "path": ".gitignore",
+      "type": "file",
+      "size": 313,
+      "modified": "2026-02-22T04:54:08.079Z",
+      "ext": "",
+      "fileType": "text"
+    },
+    {
+      "name": "AGENTS.md",
+      "path": "AGENTS.md",
+      "type": "file",
+      "size": 3327,
+      "modified": "2026-02-22T00:56:39.736Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "AUDIT-2026-02-21.md",
+      "path": "AUDIT-2026-02-21.md",
+      "type": "file",
+      "size": 11490,
+      "modified": "2026-02-22T01:05:50.543Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "BOTCOIN_MINING.md",
+      "path": "BOTCOIN_MINING.md",
+      "type": "file",
+      "size": 5959,
+      "modified": "2026-02-22T07:11:30.773Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "BUILD_011_ANALYSIS.md",
+      "path": "BUILD_011_ANALYSIS.md",
+      "type": "file",
+      "size": 6067,
+      "modified": "2026-02-22T01:20:26.027Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "BUILD_LOG.md",
+      "path": "BUILD_LOG.md",
+      "type": "file",
+      "size": 7707,
+      "modified": "2026-02-22T02:32:12.974Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "CHANGELOG.md",
+      "path": "CHANGELOG.md",
+      "type": "file",
+      "size": 7439,
+      "modified": "2026-02-22T07:28:31.929Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "CRON_SCHEDULE.md",
+      "path": "CRON_SCHEDULE.md",
+      "type": "file",
+      "size": 4584,
+      "modified": "2026-02-22T02:36:41.212Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "DEVLOG.md",
+      "path": "DEVLOG.md",
+      "type": "file",
+      "size": 19423,
+      "modified": "2026-02-22T04:54:36.181Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "draft-token-optimization-crisis.md",
+      "path": "draft-token-optimization-crisis.md",
+      "type": "file",
+      "size": 6965,
+      "modified": "2026-02-21T00:01:27.152Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "HEARTBEAT.md",
+      "path": "HEARTBEAT.md",
+      "type": "file",
+      "size": 167,
+      "modified": "2026-01-31T01:41:46.300Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "IDENTITY.md",
+      "path": "IDENTITY.md",
+      "type": "file",
+      "size": 757,
+      "modified": "2026-02-22T02:51:44.790Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "MISSION.md",
+      "path": "MISSION.md",
+      "type": "file",
+      "size": 1698,
+      "modified": "2026-01-31T03:08:54.997Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "PUBLISHING.md",
+      "path": "PUBLISHING.md",
+      "type": "file",
+      "size": 2793,
+      "modified": "2026-02-22T07:37:48.437Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "self-portrait.html",
+      "path": "self-portrait.html",
+      "type": "file",
+      "size": 74572,
+      "modified": "2026-02-15T22:48:59.061Z",
+      "ext": ".html",
+      "fileType": "text"
+    },
+    {
+      "name": "SESSION_001_SUMMARY.md",
+      "path": "SESSION_001_SUMMARY.md",
+      "type": "file",
+      "size": 6483,
+      "modified": "2026-02-22T01:22:03.198Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "SOUL.md",
+      "path": "SOUL.md",
+      "type": "file",
+      "size": 4970,
+      "modified": "2026-02-22T00:56:19.513Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "TODO.md",
+      "path": "TODO.md",
+      "type": "file",
+      "size": 3647,
+      "modified": "2026-02-22T07:28:10.370Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "TOOLS.md",
+      "path": "TOOLS.md",
+      "type": "file",
+      "size": 3795,
+      "modified": "2026-02-22T07:23:56.882Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    },
+    {
+      "name": "USER.md",
+      "path": "USER.md",
+      "type": "file",
+      "size": 1073,
+      "modified": "2026-02-22T00:56:19.525Z",
+      "ext": ".md",
+      "fileType": "markdown"
+    }
+  ],
+  "fileCount": 220,
+  "dirCount": 13
+};
+    
+    function renderNode(node, level = 0) {
+      const isDir = node.type === 'directory';
+      const hasChildren = isDir && node.children && node.children.length > 0;
+      
+      const nodeEl = document.createElement('div');
+      nodeEl.className = 'node';
+      nodeEl.dataset.path = node.path;
+      
+      const lineEl = document.createElement('div');
+      lineEl.className = 'node-line';
+      
+      // Toggle button
+      const toggleEl = document.createElement('span');
+      toggleEl.className = 'toggle';
+      toggleEl.textContent = hasChildren ? '▼' : ' ';
+      if (hasChildren) {
+        toggleEl.onclick = (e) => {
+          e.stopPropagation();
+          const children = nodeEl.querySelector('.children');
+          children.classList.toggle('collapsed');
+          toggleEl.textContent = children.classList.contains('collapsed') ? '▶' : '▼';
+        };
+      }
+      lineEl.appendChild(toggleEl);
+      
+      // Icon
+      const iconEl = document.createElement('span');
+      iconEl.className = `icon ${isDir ? 'directory' : 'file'}`;
+      iconEl.textContent = isDir ? '📁' : '📄';
+      lineEl.appendChild(iconEl);
+      
+      // Name
+      const nameEl = document.createElement('span');
+      nameEl.className = 'name';
+      nameEl.textContent = node.name;
+      if (hasChildren) {
+        const countEl = document.createElement('span');
+        countEl.className = 'file-count';
+        countEl.textContent = ` (${node.fileCount} files)`;
+        nameEl.appendChild(countEl);
+      }
+      lineEl.appendChild(nameEl);
+      
+      // Meta
+      const metaEl = document.createElement('span');
+      metaEl.className = 'meta';
+      if (!isDir) {
+        const sizeEl = document.createElement('span');
+        sizeEl.textContent = formatBytes(node.size);
+        metaEl.appendChild(sizeEl);
+      }
+      lineEl.appendChild(metaEl);
+      
+      nodeEl.appendChild(lineEl);
+      
+      // Children
+      if (hasChildren) {
+        const childrenEl = document.createElement('div');
+        childrenEl.className = 'children';
+        node.children.forEach(child => {
+          childrenEl.appendChild(renderNode(child, level + 1));
+        });
+        nodeEl.appendChild(childrenEl);
+      }
+      
+      return nodeEl;
+    }
+    
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+    
+    function countNodes(node) {
+      let files = node.type === 'file' ? 1 : 0;
+      let dirs = node.type === 'directory' ? 1 : 0;
+      
+      if (node.children) {
+        node.children.forEach(child => {
+          const counts = countNodes(child);
+          files += counts.files;
+          dirs += counts.dirs;
+        });
+      }
+      
+      return { files, dirs };
+    }
+    
+    function expandAll() {
+      document.querySelectorAll('.children').forEach(el => {
+        el.classList.remove('collapsed');
+      });
+      document.querySelectorAll('.toggle').forEach(el => {
+        if (el.textContent === '▶') el.textContent = '▼';
+      });
+    }
+    
+    function collapseAll() {
+      document.querySelectorAll('.children').forEach(el => {
+        el.classList.add('collapsed');
+      });
+      document.querySelectorAll('.toggle').forEach(el => {
+        if (el.textContent === '▼') el.textContent = '▶';
+      });
+    }
+    
+    function searchTree(query) {
+      const nodes = document.querySelectorAll('.node');
+      const lowerQuery = query.toLowerCase();
+      
+      nodes.forEach(node => {
+        const name = node.querySelector('.name').textContent.toLowerCase();
+        const path = node.dataset.path.toLowerCase();
+        const matches = name.includes(lowerQuery) || path.includes(lowerQuery);
+        
+        if (query === '') {
+          node.style.display = '';
+          node.querySelector('.node-line').classList.remove('highlight');
+        } else if (matches) {
+          node.style.display = '';
+          node.querySelector('.node-line').classList.add('highlight');
+          // Expand parent directories
+          let parent = node.parentElement;
+          while (parent && parent.classList.contains('children')) {
+            parent.classList.remove('collapsed');
+            parent = parent.parentElement;
+          }
+        } else {
+          node.querySelector('.node-line').classList.remove('highlight');
+        }
+      });
+    }
+    
+    // Initialize
+    const counts = countNodes(treeData);
+    document.getElementById('fileCount').textContent = counts.files;
+    document.getElementById('dirCount').textContent = counts.dirs;
+    document.getElementById('tree').appendChild(renderNode(treeData));
+    
+    // Search
+    document.getElementById('search').addEventListener('input', (e) => {
+      searchTree(e.target.value);
+    });
+  </script>
+</body>
+</html>
